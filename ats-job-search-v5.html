@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATS Job Search Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #1A1A1A;
+      --surface: #222222;
+      --surface2: #2A2A2A;
+      --border: #333333;
+      --border-bright: #444444;
+      --text: #E8E8E8;
+      --text-dim: #666;
+      --text-muted: #444;
+      --green: #60A5FA;
+      --green-dim: #1E3A5F;
+      --amber: #F59E0B;
+      --amber-dim: #78350F;
+      --red: #EF4444;
+      --blue: #3B82F6;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .terminal-prompt {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: #60A5FA;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-prompt::before {
+      content: '►';
+      font-size: 0.6rem;
+    }
+
+    h1 {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    h1 span { color: var(--green); }
+
+    .header-desc {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-weight: 300;
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    .header-meta {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .meta-badge {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .meta-badge .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 40px 80px;
+    }
+
+    /* ── SECTION LABELS ── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::before {
+      content: '//';
+      color: var(--green);
+    }
+
+    /* ── INPUTS ── */
+    .inputs-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .input-group label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 9px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .input-group input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 2px rgba(34,197,94,0.1);
+    }
+
+    .input-group input::placeholder {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Fix calendar icon visibility on dark background */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.7);
+      cursor: pointer;
+    }
+
+    input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .input-note {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* ── SEARCH PANELS ── */
+    .search-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .search-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-title .indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .ats-panel .indicator { background: var(--green); }
+    .company-panel .indicator { background: var(--amber); }
+
+    .panel-desc {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    .query-display {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: #93C5FD;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      word-break: break-all;
+      line-height: 1.6;
+      min-height: 60px;
+      max-height: 90px;
+      overflow-y: auto;
+    }
+
+    .company-panel .query-display { color: var(--amber); }
+
+    .panel-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border-bright);
+      color: var(--text-dim);
+    }
+
+    .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+    .btn-ghost.copied { border-color: var(--green); color: var(--green); }
+
+    .btn-green {
+      background: var(--green-dim);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+
+    .btn-green:hover { background: var(--green); color: var(--bg); }
+
+    .btn-amber {
+      background: var(--amber-dim);
+      border: 1px solid var(--amber);
+      color: var(--amber);
+    }
+
+    .btn-amber:hover { background: var(--amber); color: var(--bg); }
+
+    .btn-dim {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 0.68rem;
+    }
+
+    .btn-dim:hover { border-color: var(--border-bright); color: var(--text); }
+
+    /* ── TIPS ── */
+    .tips-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .tips-toggle:hover { border-color: var(--border-bright); color: var(--text); }
+
+    .tips-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: none;
+    }
+
+    .tips-content.open { display: block; }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .tip-group h4 {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .tip-group ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+    .tip-group li {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+      display: flex;
+      gap: 8px;
+    }
+
+    .tip-group li::before { content: '>'; color: var(--green); flex-shrink: 0; }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.78em;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #93C5FD;
+    }
+
+    /* ── CARDS ── */
+    .cards-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .cards-grid.collapsed { display: none; }
+
+    .ats-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      transition: border-color 0.15s;
+    }
+
+    .ats-card:hover { border-color: var(--border-bright); }
+    .ats-card.company-card { border-color: var(--amber-dim); }
+    .ats-card.company-card:hover { border-color: var(--amber); }
+
+    .card-name {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-name::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+    }
+
+    .company-card .card-name::before { background: var(--amber); }
+
+    .card-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .card-query {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: #93C5FD;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 7px 9px;
+      margin-bottom: 10px;
+      word-break: break-all;
+      line-height: 1.5;
+      min-height: 38px;
+    }
+
+    .company-card .card-query { color: var(--amber); }
+
+    .card-actions { display: flex; gap: 6px; }
+
+    .card-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 6px 8px;
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .card-btn-copy {
+      background: transparent;
+      border: 1px solid var(--border-bright);
+      color: var(--text-dim);
+    }
+
+    .card-btn-copy:hover { color: var(--text); border-color: var(--text-dim); }
+    .card-btn-copy.copied { color: var(--green); border-color: var(--green); }
+
+    .card-btn-search {
+      background: var(--green-dim);
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+
+    .card-btn-search:hover { background: var(--green); color: var(--bg); }
+    .company-card .card-btn-search { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+    .company-card .card-btn-search:hover { background: var(--amber); color: var(--bg); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    footer a:hover { color: var(--green); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      header { padding: 20px 20px; }
+      main { padding: 24px 20px 60px; }
+      .inputs-grid { grid-template-columns: 1fr; }
+      .search-panels { grid-template-columns: 1fr; }
+      .cards-grid { grid-template-columns: 1fr 1fr; }
+      .tips-grid { grid-template-columns: 1fr; }
+      footer { padding: 16px 20px; flex-direction: column; gap: 8px; }
+    }
+
+    @media (max-width: 480px) {
+      .cards-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <div class="terminal-prompt">ats-job-search v2.0 — dkloh</div>
+      <h1>ATS Job Search <span>Generator</span></h1>
+      <p class="header-desc">Generate Google dork queries to find jobs directly on ATS platforms and company career pages — bypassing LinkedIn and Indeed.</p>
+      <div class="header-meta">
+        <div class="meta-badge"><span class="dot"></span>18 ATS platforms</div>
+        <div class="meta-badge"><span class="dot" style="background:var(--amber)"></span>Direct company pages</div>
+      </div>
+    </div>
+    <button class="btn btn-dim" id="export-all-btn" style="align-self:flex-start; margin-top:4px;">↓ Export All</button>
+  </header>
+
+  <main>
+
+    <!-- INPUTS -->
+    <div class="section-label">config</div>
+    <div class="inputs-card">
+      <div class="inputs-grid">
+        <div class="input-group">
+          <label>keywords</label>
+          <input type="text" id="keywords" placeholder="e.g., junior web developer react" />
+        </div>
+        <div class="input-group">
+          <label>location</label>
+          <input type="text" id="location" placeholder="e.g., New York OR Remote" />
+        </div>
+        <div class="input-group">
+          <label>exclude</label>
+          <input type="text" id="exclude" placeholder="e.g., senior, manager, lead" />
+          <div class="input-note">comma-separated → auto adds minus sign</div>
+        </div>
+        <div class="input-group">
+          <label>posted_after</label>
+          <input type="date" id="after-date" />
+          <div class="input-note">note: google's after: filter is approximate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEARCH PANELS -->
+    <div class="section-label">search</div>
+    <div class="search-panels">
+      <div class="search-panel ats-panel">
+        <div class="panel-title">
+          <span class="indicator"></span>
+          All ATS Platforms
+        </div>
+        <div class="panel-desc">Split into 2 batches to avoid Google's query length limit. Each batch covers 9 platforms.</div>
+        <div class="query-display" id="combined-ats-display">// enter keywords to build query</div>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" id="copy-ats-combined">copy</button>
+          <button class="btn btn-green" id="search-ats-batch1">batch_1 ↗</button>
+          <button class="btn btn-green" id="search-ats-batch2">batch_2 ↗</button>
+          <button class="btn btn-dim" id="export-ats-btn">↓</button>
+        </div>
+      </div>
+
+      <div class="search-panel company-panel">
+        <div class="panel-title">
+          <span class="indicator"></span>
+          Direct Company Pages
+        </div>
+        <div class="panel-desc">Two separate searches for best coverage. Shorter exclusion list keeps Google parsing operators correctly.</div>
+        <div class="query-display" id="company-display">// enter keywords to build query</div>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" id="copy-company">copy</button>
+          <button class="btn btn-amber" id="search-company-careers">inurl:careers ↗</button>
+          <button class="btn btn-amber" id="search-company-jobs">inurl:jobs ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIPS -->
+    <button class="tips-toggle" id="tips-toggle">
+      <span>// pro_tips & examples</span>
+      <span id="tips-chevron">▼</span>
+    </button>
+    <div class="tips-content" id="tips-content">
+      <div class="tips-grid">
+        <div class="tip-group">
+          <h4>keywords</h4>
+          <ul>
+            <li>Exact phrases: <code>"junior developer"</code></li>
+            <li>OR logic: <code>react OR nextjs OR vue</code></li>
+            <li>Stack combos: <code>typescript tailwind postgres</code></li>
+            <li>Role variants: <code>"web developer" OR "frontend engineer"</code></li>
+          </ul>
+        </div>
+        <div class="tip-group">
+          <h4>location</h4>
+          <ul>
+            <li>Remote only: <code>Remote</code></li>
+            <li>Hybrid: <code>Remote OR Hybrid</code></li>
+            <li>NYC area: <code>"New York" OR NYC OR Remote</code></li>
+            <li>WFH: <code>Remote OR WFH OR "work from home"</code></li>
+          </ul>
+        </div>
+        <div class="tip-group">
+          <h4>date_filter</h4>
+          <ul>
+            <li>Google's <code>after:</code> is approximate — not always reliable</li>
+            <li>After searching, use Google's "Past week" or "Past month" filter for fresher results</li>
+            <li>Set to 2–4 weeks ago for best balance of recency and volume</li>
+          </ul>
+        </div>
+        <div class="tip-group">
+          <h4>company_pages</h4>
+          <ul>
+            <li>Catches <code>company.com/jobs</code>, <code>jobs.company.com</code>, <code>company.com/careers</code></li>
+            <li>Target startups: add <code>site:.io</code> to keywords</li>
+            <li>Target AI companies: add <code>site:.ai</code></li>
+            <li>Add industry: <code>fintech OR proptech OR "b2b saas"</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- INDIVIDUAL CARDS -->
+    <button class="tips-toggle" id="platforms-toggle" style="margin-bottom:4px;">
+      <span>// all_platforms (19)</span>
+      <span id="platforms-chevron">▼</span>
+    </button>
+    <div class="cards-grid collapsed" id="cards-grid"></div>
+
+  </main>
+
+  <footer>
+    <p>// built by derek kloh — 2026</p>
+    <a href="https://dkloh.github.io/portfolio" target="_blank">portfolio →</a>
+  </footer>
+
+  <script>
+    const ATS_PLATFORMS = [
+      { name: 'Greenhouse', pattern: 'site:boards.greenhouse.io' },
+      { name: 'Lever', pattern: 'site:jobs.lever.co' },
+      { name: 'Workday', pattern: 'site:myworkdayjobs.com' },
+      { name: 'Ashby', pattern: 'site:jobs.ashbyhq.com' },
+      { name: 'BambooHR', pattern: 'site:bamboohr.com' },
+      { name: 'SmartRecruiters', pattern: 'site:jobs.smartrecruiters.com' },
+      { name: 'iCIMS', pattern: 'site:icims.com' },
+      { name: 'Jobvite', pattern: 'site:jobs.jobvite.com' },
+      { name: 'Taleo', pattern: 'site:taleo.net' },
+      { name: 'JazzHR', pattern: 'site:applytojob.com' },
+      { name: 'Workable', pattern: 'site:apply.workable.com' },
+      { name: 'Breezy HR', pattern: 'site:breezy.hr' },
+      { name: 'Recruitee', pattern: 'site:recruitee.com' },
+      { name: 'Rippling', pattern: 'site:jobs.rippling.com' },
+      { name: 'Pinpoint', pattern: 'site:pinpointhq.com' },
+      { name: 'Comeet', pattern: 'site:comeet.com' },
+      { name: 'Teamtailor', pattern: 'site:teamtailor.com' },
+      { name: 'Personio', pattern: 'site:personio.de' },
+    ];
+
+    const COMPANY_PATTERN_CAREERS = 'inurl:careers (apply OR hiring OR "job opening" OR "open role") -site:linkedin.com -site:indeed.com -site:glassdoor.com -site:greenhouse.io -site:lever.co -site:myworkdayjobs.com -site:bamboohr.com -site:taleo.net';
+    const COMPANY_PATTERN_JOBS = 'inurl:jobs (apply OR hiring OR "job opening" OR "open role") -site:linkedin.com -site:indeed.com -site:glassdoor.com -site:greenhouse.io -site:lever.co -site:myworkdayjobs.com -site:bamboohr.com -site:taleo.net';
+
+    const BATCH1 = ATS_PLATFORMS.slice(0, 9);
+    const BATCH2 = ATS_PLATFORMS.slice(9);
+
+    function getInputs() {
+      return {
+        keywords: document.getElementById('keywords').value.trim(),
+        location: document.getElementById('location').value.trim(),
+        exclude: document.getElementById('exclude').value.trim(),
+        afterDate: document.getElementById('after-date').value,
+      };
+    }
+
+    function buildSuffix(inputs) {
+      if (!inputs) return '';
+      const { keywords, location, exclude, afterDate } = inputs;
+      let s = '';
+      if (keywords) s += ` ${keywords}`;
+      if (location) s += ` "${location}"`;
+      if (exclude) {
+        const ex = exclude.split(',').map(t => t.trim()).filter(Boolean).map(t => `-${t}`).join(' ');
+        if (ex) s += ` ${ex}`;
+      }
+      if (afterDate) s += ` after:${afterDate}`;
+      return s;
+    }
+
+    function buildQuery(pattern, inputs) {
+      return pattern + buildSuffix(inputs);
+    }
+
+    function buildBatchQuery(batch, inputs) {
+      return `(${batch.map(p => p.pattern).join(' OR ')})` + buildSuffix(inputs);
+    }
+
+    function buildCompanyQuery(type, inputs) {
+      const pattern = type === 'jobs' ? COMPANY_PATTERN_JOBS : COMPANY_PATTERN_CAREERS;
+      return pattern + buildSuffix(inputs);
+    }
+
+    function openSearch(query) {
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+    }
+
+    function copyText(text, btn, defaultLabel = 'copy') {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✓ copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = defaultLabel;
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    function updateAll() {
+      const inputs = getInputs();
+      document.getElementById('combined-ats-display').textContent = buildBatchQuery(BATCH1, inputs);
+      document.getElementById('company-display').textContent = buildCompanyQuery('careers', inputs);
+
+      document.querySelectorAll('.ats-card').forEach(card => {
+        const pattern = card.dataset.pattern;
+        const query = pattern === 'company' ? buildCompanyQuery(inputs) : buildQuery(pattern, inputs);
+        card.querySelector('.card-query').textContent = query;
+      });
+    }
+
+    function buildCards() {
+      const grid = document.getElementById('cards-grid');
+
+      ATS_PLATFORMS.forEach(ats => {
+        const card = document.createElement('div');
+        card.className = 'ats-card';
+        card.dataset.pattern = ats.pattern;
+        card.innerHTML = `
+          <div class="card-name">${ats.name}</div>
+          <div class="card-query">${ats.pattern}</div>
+          <div class="card-actions">
+            <button class="card-btn card-btn-copy">copy</button>
+            <button class="card-btn card-btn-search">search ↗</button>
+          </div>
+        `;
+        card.querySelector('.card-btn-copy').addEventListener('click', function() {
+          copyText(buildQuery(ats.pattern, getInputs()), this, 'copy');
+        });
+        card.querySelector('.card-btn-search').addEventListener('click', () => {
+          openSearch(buildQuery(ats.pattern, getInputs()));
+        });
+        grid.appendChild(card);
+      });
+
+      // Company card
+      const compCard = document.createElement('div');
+      compCard.className = 'ats-card company-card';
+      compCard.dataset.pattern = 'company';
+      compCard.innerHTML = `
+        <div class="card-name">Direct Company Pages</div>
+        <div class="card-desc">inurl:jobs OR inurl:careers — excludes job boards</div>
+        <div class="card-query">${COMPANY_PATTERN_CAREERS}</div>
+        <div class="card-actions">
+          <button class="card-btn card-btn-copy">copy</button>
+          <button class="card-btn card-btn-search">search ↗</button>
+        </div>
+      `;
+      compCard.querySelector('.card-btn-copy').addEventListener('click', function() {
+        copyText(buildCompanyQuery('careers', getInputs()), this, 'copy');
+      });
+      compCard.querySelector('.card-btn-search').addEventListener('click', () => {
+        openSearch(buildCompanyQuery('careers', getInputs()));
+      });
+      grid.appendChild(compCard);
+    }
+
+    function exportQueries() {
+      const inputs = getInputs();
+      let content = `ATS JOB SEARCH QUERIES — ${new Date().toLocaleDateString()}\n`;
+      if (inputs.keywords) content += `keywords: ${inputs.keywords}\n`;
+      if (inputs.location) content += `location: ${inputs.location}\n`;
+      if (inputs.exclude) content += `excluding: ${inputs.exclude}\n`;
+      content += '\n' + '='.repeat(60) + '\n\n';
+      content += `BATCH 1:\n${buildBatchQuery(BATCH1, inputs)}\n\n`;
+      content += `BATCH 2:\n${buildBatchQuery(BATCH2, inputs)}\n\n`;
+      content += `DIRECT COMPANY PAGES (careers):\n${buildCompanyQuery('careers', inputs)}\n\nDIRECT COMPANY PAGES (jobs):\n${buildCompanyQuery('jobs', inputs)}\n\n`;
+      content += '='.repeat(60) + '\n\nINDIVIDUAL PLATFORMS:\n\n';
+      ATS_PLATFORMS.forEach(ats => {
+        content += `${ats.name}:\n${buildQuery(ats.pattern, inputs)}\n\n`;
+      });
+
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `job-search-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Event listeners
+    ['keywords', 'location', 'exclude', 'after-date'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateAll);
+    });
+
+    document.getElementById('copy-ats-combined').addEventListener('click', function() {
+      copyText(buildBatchQuery(BATCH1, getInputs()), this, 'copy');
+    });
+    document.getElementById('search-ats-batch1').addEventListener('click', () => {
+      openSearch(buildBatchQuery(BATCH1, getInputs()));
+    });
+    document.getElementById('search-ats-batch2').addEventListener('click', () => {
+      openSearch(buildBatchQuery(BATCH2, getInputs()));
+    });
+    document.getElementById('copy-company').addEventListener('click', function() {
+      copyText(buildCompanyQuery('careers', getInputs()), this, 'copy');
+    });
+    document.getElementById('search-company-careers').addEventListener('click', () => {
+      openSearch(buildCompanyQuery('careers', getInputs()));
+    });
+    document.getElementById('search-company-jobs').addEventListener('click', () => {
+      openSearch(buildCompanyQuery('jobs', getInputs()));
+    });
+    document.getElementById('export-all-btn').addEventListener('click', exportQueries);
+    document.getElementById('export-ats-btn').addEventListener('click', exportQueries);
+
+    document.getElementById('tips-toggle').addEventListener('click', () => {
+      document.getElementById('tips-content').classList.toggle('open');
+      const ch = document.getElementById('tips-chevron');
+      ch.textContent = ch.textContent === '▼' ? '▲' : '▼';
+    });
+
+    buildCards();
+    // Small delay ensures DOM is ready before first update
+    requestAnimationFrame(updateAll);
+
+    document.getElementById('platforms-toggle').addEventListener('click', () => {
+      const grid = document.getElementById('cards-grid');
+      const chevron = document.getElementById('platforms-chevron');
+      grid.classList.toggle('collapsed');
+      chevron.textContent = grid.classList.contains('collapsed') ? '▼' : '▲';
+    });
+  </script>
+</body>
+</html>
